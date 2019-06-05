@@ -967,10 +967,25 @@ public:
             m.scale.x = .2;
             m.scale.y = .2;
             m.scale.z = .2;
-            m.color.a = 1;
+            m.color.a = 0.75;
             m.color.g = 1;
             m.lifetime = ros::Duration(0.5);
 
+            markers_pub_.publish(m);
+						// Text showing person's ID number 
+            m.color.r = 1.0; 
+            m.color.g = 1.0; 
+            m.color.b = 1.0; 
+            m.color.a = 0.75; 
+            m.pose.position.x += 0.;
+            m.pose.position.y += 0.;
+            m.lifetime = ros::Duration(0.5);
+            m.ns = "PEOPLE";
+						// TODO: set text id based on total number of people
+            m.id = 1000*i;
+            m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+            m.text = std::string((*sf_iter)->object_id).substr(6);
+            m.scale.z = 0.2;
             markers_pub_.publish(m);
           }
         }
