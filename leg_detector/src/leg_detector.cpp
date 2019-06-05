@@ -888,105 +888,119 @@ public:
         pos.initialization = 0;
         legs.push_back(pos);
 
-      }
-
-      if (publish_leg_markers_)
-      {
-        visualization_msgs::Marker m;
-        m.header.stamp = (*sf_iter)->time_;
-        m.header.frame_id = fixed_frame;
-        m.ns = "LEGS";
-        m.id = i;
-        m.type = m.SPHERE;
-        m.pose.position.x = (*sf_iter)->position_[0];
-        m.pose.position.y = (*sf_iter)->position_[1];
-        m.pose.position.z = (*sf_iter)->position_[2];
-
-        m.scale.x = .1;
-        m.scale.y = .1;
-        m.scale.z = .1;
-        m.color.a = 1;
-        m.lifetime = ros::Duration(0.5);
-        if ((*sf_iter)->object_id != "")
+        if (publish_leg_markers_)
         {
-          m.color.r = 1;
-        }
-        else
-        {
-          m.color.b = (*sf_iter)->getReliability();
-        }
+          visualization_msgs::Marker m;
+          m.header.stamp = (*sf_iter)->time_;
+          m.header.frame_id = fixed_frame;
+          m.ns = "LEGS";
+          m.id = i;
+          m.type = m.SPHERE;
+          m.pose.position.x = (*sf_iter)->position_[0];
+          m.pose.position.y = (*sf_iter)->position_[1];
+          m.pose.position.z = (*sf_iter)->position_[2];
 
-        markers_pub_.publish(m);
-      }
-
-      if (publish_people_ || publish_people_markers_)
-      {
-        SavedFeature* other = (*sf_iter)->other;
-        if (other != NULL && other < (*sf_iter))
-        {
-          double dx = ((*sf_iter)->position_[0] + other->position_[0]) / 2,
-                 dy = ((*sf_iter)->position_[1] + other->position_[1]) / 2,
-                 dz = ((*sf_iter)->position_[2] + other->position_[2]) / 2;
-
-          if (publish_people_)
+          m.scale.x = .1;
+          m.scale.y = .1;
+          m.scale.z = .1;
+          m.color.a = 0.75;
+          m.lifetime = ros::Duration(0.5);
+          if ((*sf_iter)->object_id != "")
           {
-            reliability = reliability * other->reliability;
-            people_msgs::PositionMeasurement pos;
-            pos.header.stamp = (*sf_iter)->time_;
-            pos.header.frame_id = fixed_frame;
-            pos.name = (*sf_iter)->object_id;;
-            pos.object_id = (*sf_iter)->id_ + "|" + other->id_;
-            pos.pos.x = dx;
-            pos.pos.y = dy;
-            pos.pos.z = dz;
-            pos.reliability = reliability;
-            pos.covariance[0] = pow(0.3 / reliability, 2.0);
-            pos.covariance[1] = 0.0;
-            pos.covariance[2] = 0.0;
-            pos.covariance[3] = 0.0;
-            pos.covariance[4] = pow(0.3 / reliability, 2.0);
-            pos.covariance[5] = 0.0;
-            pos.covariance[6] = 0.0;
-            pos.covariance[7] = 0.0;
-            pos.covariance[8] = 10000.0;
-            pos.initialization = 0;
-            people.push_back(pos);
+            m.color.r = 1;
           }
-
-          if (publish_people_markers_)
+          else
           {
-            visualization_msgs::Marker m;
-            m.header.stamp = (*sf_iter)->time_;
-            m.header.frame_id = fixed_frame;
-            m.ns = "PEOPLE";
-            m.id = i;
-            m.type = m.SPHERE;
-            m.pose.position.x = dx;
-            m.pose.position.y = dy;
-            m.pose.position.z = dz;
-            m.scale.x = .2;
-            m.scale.y = .2;
-            m.scale.z = .2;
-            m.color.a = 0.75;
-            m.color.g = 1;
-            m.lifetime = ros::Duration(0.5);
+            m.color.b = (*sf_iter)->getReliability();
+          }
+          markers_pub_.publish(m);
 
-            markers_pub_.publish(m);
-						// Text showing person's ID number 
-            m.color.r = 1.0; 
-            m.color.g = 1.0; 
-            m.color.b = 1.0; 
-            m.color.a = 0.75; 
-            m.pose.position.x += 0.;
-            m.pose.position.y += 0.;
-            m.lifetime = ros::Duration(0.5);
-            m.ns = "PEOPLE";
-						// TODO: set text id based on total number of people
-            m.id = 1000*i;
-            m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-            m.text = std::string((*sf_iter)->object_id).substr(6);
-            m.scale.z = 0.2;
-            markers_pub_.publish(m);
+          // Text showing person's ID number 
+          m.color.r = 0.0; 
+          m.color.g = 0.0; 
+          m.color.b = 1.0; 
+          m.color.a = 0.75; 
+          m.pose.position.z += 0.25;
+          m.lifetime = ros::Duration(0.5);
+          m.ns = "LEGS";
+          // TODO: set text id based on total number of people
+          m.id = 2000*i;
+          m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+          m.text = std::string((*sf_iter)->id_).substr(8);
+          m.scale.z = 0.2;
+          markers_pub_.publish(m);
+        }
+
+        if (publish_people_ || publish_people_markers_)
+        {
+          SavedFeature* other = (*sf_iter)->other;
+          if (other != NULL && other < (*sf_iter))
+          {
+            double dx = ((*sf_iter)->position_[0] + other->position_[0]) / 2,
+                   dy = ((*sf_iter)->position_[1] + other->position_[1]) / 2,
+                   dz = ((*sf_iter)->position_[2] + other->position_[2]) / 2;
+
+            if (publish_people_)
+            {
+              reliability = reliability * other->reliability;
+              people_msgs::PositionMeasurement pos;
+              pos.header.stamp = (*sf_iter)->time_;
+              pos.header.frame_id = fixed_frame;
+              pos.name = (*sf_iter)->object_id;;
+              pos.object_id = (*sf_iter)->id_ + "|" + other->id_;
+              pos.pos.x = dx;
+              pos.pos.y = dy;
+              pos.pos.z = dz;
+              pos.reliability = reliability;
+              pos.covariance[0] = pow(0.3 / reliability, 2.0);
+              pos.covariance[1] = 0.0;
+              pos.covariance[2] = 0.0;
+              pos.covariance[3] = 0.0;
+              pos.covariance[4] = pow(0.3 / reliability, 2.0);
+              pos.covariance[5] = 0.0;
+              pos.covariance[6] = 0.0;
+              pos.covariance[7] = 0.0;
+              pos.covariance[8] = 10000.0;
+              pos.initialization = 0;
+              people.push_back(pos);
+            }
+
+            if (publish_people_markers_)
+            {
+              visualization_msgs::Marker m;
+              m.header.stamp = (*sf_iter)->time_;
+              m.header.frame_id = fixed_frame;
+              m.ns = "PEOPLE";
+              m.id = i;
+              m.type = m.SPHERE;
+              m.pose.position.x = dx;
+              m.pose.position.y = dy;
+              m.pose.position.z = dz;
+              m.scale.x = .2;
+              m.scale.y = .2;
+              m.scale.z = .2;
+              m.color.a = 0.75;
+              m.color.g = 1;
+              m.lifetime = ros::Duration(0.5);
+
+              markers_pub_.publish(m);
+			  			// Text showing person's ID number 
+              m.color.r = 1.0; 
+              m.color.g = 1.0; 
+              m.color.b = 1.0; 
+              m.color.a = 0.75; 
+              m.pose.position.x += 0.;
+              m.pose.position.y += 0.;
+              m.pose.position.z += 0.25;
+              m.lifetime = ros::Duration(0.5);
+              m.ns = "PEOPLE";
+			  			// TODO: set text id based on total number of people
+              m.id = 1000*i;
+              m.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+              m.text = std::string((*sf_iter)->object_id).substr(6);
+              m.scale.z = 0.2;
+              markers_pub_.publish(m);
+            }
           }
         }
       }
