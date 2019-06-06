@@ -48,6 +48,7 @@
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
+#include <std_srvs/Trigger.h>
 
 #include <people_tracking_filter/tracker_kalman.h>
 #include <people_tracking_filter/state_pos_vel.h>
@@ -56,6 +57,7 @@
 #include <dynamic_reconfigure/server.h>
 
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 using namespace laser_processor;
@@ -1021,13 +1023,32 @@ public:
   }
 };
 
+
+std::unique_ptr<LegDetector> ld;
+std::unique_ptr<ros::NodeHandle> nh;
+
+bool reset_service(
+  std_srvs::Trigger::Request  &req,
+  std_srvs::Trigger::Response &res
+)
+{
+  ld.reset(new LegDetector(*nh));
+  res.success = true;
+  return true;
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "leg_detector");
   g_argc = argc;
   g_argv = argv;
-  ros::NodeHandle nh;
-  LegDetector ld(nh);
+  nh.reset(new ros::NodeHandle());
+  ros::NodeHandle local_nh("~");
+  ld.reset(new LegDetector(*nh));
+  ros::ServiceServer reset_client = local_nh.advertiseService(
+    "reset_tracker", reset_service
+  );
+
   ros::spin();
 
   return 0;
