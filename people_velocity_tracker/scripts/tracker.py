@@ -51,6 +51,8 @@ class PersonEstimate(object):
 
         ivel = subtract(self.pos.pos, last.pos)
         time = (self.pos.header.stamp - last.header.stamp).to_sec()
+        if time == 0:
+          return
         scale(ivel, 1.0 / time)
 
         self.k.update([ivel.x, ivel.y, ivel.z])
@@ -83,6 +85,7 @@ class PersonEstimate(object):
         p.position = self.pos.pos
         p.velocity = self.velocity()
         p.reliability = self.reliability
+        p.tags.append(self.pos.name)
         return self.pos.header.frame_id, p
 
 
@@ -133,5 +136,6 @@ class VelocityTracker(object):
         self.ppub.publish(pl)
 
 rospy.init_node("people_velocity_tracker")
+gen.ns = rospy.get_param('~marker_ns', "velocities")
 vt = VelocityTracker()
 vt.spin()
